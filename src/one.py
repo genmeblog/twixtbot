@@ -7,6 +7,7 @@ import numpy
 import twixt
 
 parser = argparse.ArgumentParser(description='One twixt position.')
+parser.add_argument('--mark', type=str)
 parser.add_argument('--moves', '-m', type=str)
 parser.add_argument('--check_draw', '-D', action='store_true')
 parser.add_argument('--display', '-d', action='store_true')
@@ -23,6 +24,9 @@ else:
     resources = dict()
 
 game = twixt.Game()
+
+possible_moves = []
+thinker_moves = []
 
 if args.moves:
     for m in args.moves.split(','):
@@ -46,11 +50,14 @@ if args.nneval:
     el = numpy.exp(ml - max_ml)
     divisor = el[LMnz].sum()
     P = el / divisor
+    # print P
     P[(1-LM).nonzero()] = 0
     inds = numpy.argsort(P)
-    for i in reversed(inds[-10:]):
+    for idx, i in enumerate(reversed(inds[-40:])):
         coord = naf.policy_index_point(game, i)
-        print "%3s %6.2f" % (str(coord), P[i]*100.0)
+        possible_moves.append(coord)
+        if idx<10:
+            print "%3s %6.2f" % (str(coord), P[i]*100.0)
 
     #import mpui
     #mpui.show_game_with_p(game, P)
@@ -62,11 +69,14 @@ if args.thinker:
 	m, n = thinker.pick_move(game)
     else :
 	m = tup
-    print m
-    if m != "resign":
-        game.play(m)
+
+    # if m != "resign":
+        # game.play(m)
 
     if args.think_report:
+        _,rep = thinker.report.split("=")
+        for m in rep.split(","):
+            thinker_moves.append(twixt.Point(m))
 	print thinker.report
 
 if args.show_game_state:
@@ -92,7 +102,25 @@ if args.show_game_state:
 if args.display:
     import ui
     w = ui.TwixtBoardWindow()
+    
+    w.draw_dummy(possible_moves)
+    
+    turn = game.turn
+    if args.thinker:
+        for m in thinker_moves:
+            game.play(str(m))
+            
     w.set_game(game)
+    
+    if args.mark:
+        marks = []
+        for m in args.mark.split(','):
+            marks.append(twixt.Point(m))
+	w.draw_dummy(marks, True);
+        
+    if args.thinker:
+        w.draw_steps(thinker_moves, turn);
+        
     w.win.getMouse()
 
 if args.check_draw:
@@ -110,3 +138,5 @@ if args.check_draw:
             print "bcw"
         else:
             print "draw"
+
+

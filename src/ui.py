@@ -31,17 +31,39 @@ class TwixtBoardWindow:
         y1 = (2 + ybit*(self.SIZE-2))*self.CELL
         return [gr.Point(x0,y0), gr.Point(x1,y1)]
 
+    def _colors(self, idx):
+        colors = {
+            0: "green",
+            1: "#ff0000",
+            2: "#f17535",
+            3: "#e7be65",
+            4: "#e1e38f",
+            5: "#d2e4b5"
+        }
+        if idx < 15:
+            return colors.get(idx,"#d0d0d0")
+        else:
+            return "#f0f0f0"
+    
     def center(self, x, y):
 	return gr.Point((x+1)*self.CELL+self.CELL/2, (y+1)*self.CELL+self.CELL/2)
 
     def __init__(self, name="Twixt"):
-	self.win = gr.GraphWin(name, self.CELL*(2+self.SIZE), self.CELL*(2+self.SIZE), autoflush=False)
+        self.bottom = self.CELL*(2+self.SIZE)
+	self.win = gr.GraphWin(name, self.CELL*(2+self.SIZE), self.bottom+self.CELL, autoflush=False)
 	self.history = []
 	self.known_moves = set()
 
 	# Regular background
 	self.win.setBackground(gr.color_rgb(244, 255,240))
 
+        # bottom
+        for i in range(20):
+            peg = gr.Circle(self.center(i,25), self.PEG_RADIUS)
+            peg.setWidth(0)
+            peg.setFill(self._colors(i))
+            peg.draw(self.win)
+        
 	# black/white end zones
 	for i in range(4):
 	    a = self.twopoints(i)
@@ -198,7 +220,32 @@ class TwixtBoardWindow:
 	    peg.setFill("black")
 	peg.draw(self.win)
 	return peg
+    
+    def draw_dummy(self, points, ring=False):
+        for i,p in enumerate(points):
+            peg = gr.Circle(self.center(p.x, p.y), self.PEG_RADIUS+2)
+            if ring:
+                peg.setWidth(3)
+                peg.setFill("lightblue")
+                peg.setOutline("blue")
+            else:
+                peg.setWidth(0)
+                peg.setFill(self._colors(i))
+            peg.draw(self.win);
 
+    def draw_steps(self, points, turn):
+        color = turn
+        for i,p in enumerate(points):
+            txt = gr.Text(self.center(p.x,p.y),str(i+1))
+            txt.setFace("courier")
+            if color == twixt.Game.WHITE:
+                txt.setFill("black")
+            else:
+                txt.setFill("white")
+            txt.setSize(8)
+            txt.draw(self.win)
+            color = (color+1) & 1
+            
     def create_move_objects(self, game, index):
 	color = (index + 1) & 1
 	move = game.history[index]
