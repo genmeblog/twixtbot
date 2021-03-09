@@ -1,3 +1,11 @@
+## genmeblog comments
+
+* to start playing server call: `./nns.py -m ../models/six-917000 -l 55555`
+* to run analysis with static NN evaluation call: `./one.py -d --nneval ../models/six-917000 -m s4,h7,s8,s15,v12,q14,v16,u16,p11,m14,q13,o15,t17,w15 --mark h11`
+* to run analysis with NN playing + static evaluation call:
+
+`./one.py -d --nneval ../models/six-917000 -t asn_player:trials=2000,location=55555 -T -m s4,h7,s8,s15,v12,q14,v16,u16,p11,m14,q13,o15,t17,w15 --mark h11`
+
 # twixtbot
 Code for AI to play the board game Twixt
 
